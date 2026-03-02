@@ -138,3 +138,30 @@ button:focus-visible {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ========================================
+   RESPONSIVE STYLES - Mobile & Tablet Only
+   These only apply to smaller screens
+   ======================================== */
+
+/* Tablet (768px and below) */
+@media (max-width: 768px) {
+  html, body, #root {
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  body {
+    min-height: 100vh;
+  }
+}
+
+/* Mobile (480px and below) */
+@media (max-width: 480px) {
+  html, body, #root {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}

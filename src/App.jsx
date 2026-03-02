@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useSimulationStore, calcExpressionScore, getGeneStatus } from './store/useSimulationStore';
 import Nucleosome from './components/3d/Nucleosome';
 import CameraControls from './components/ui/CameraControls';
@@ -7,10 +7,37 @@ import CHALLENGES from './data/challenges';
 import { MODIFICATION_SITES } from './data/modifications';
 
 // ============================================================
+// RESPONSIVE HOOK - Only affects mobile/tablet
+// ============================================================
+function useResponsive() {
+  const [screenSize, setScreenSize] = useState('desktop');
+  
+  useEffect(() => {
+    const checkScreen = () => {
+      const width = window.innerWidth;
+      if (width <= 480) setScreenSize('mobile');
+      else if (width <= 768) setScreenSize('tablet');
+      else setScreenSize('desktop');
+    };
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+    return () => window.removeEventListener('resize', checkScreen);
+  }, []);
+  
+  return {
+    isMobile: screenSize === 'mobile',
+    isTablet: screenSize === 'tablet',
+    isSmallScreen: screenSize !== 'desktop',
+  };
+}
+
+// ============================================================
 // LANDING PAGE COMPONENT
 // ============================================================
 
 function LandingPage({ onStartSimulation, onStartGame }) {
+  const { isMobile, isTablet, isSmallScreen } = useResponsive();
+  
   return (
     <div style={{
       minHeight: "100vh",
@@ -20,9 +47,9 @@ function LandingPage({ onStartSimulation, onStartGame }) {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      overflow: "hidden",
+      overflow: isSmallScreen ? "auto" : "hidden",
       position: "relative",
-      padding: "40px 60px",
+      padding: isMobile ? "24px 16px" : isTablet ? "30px 30px" : "40px 60px",
     }}>
       {/* Animated background particles */}
       <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none" }}>
@@ -41,12 +68,13 @@ function LandingPage({ onStartSimulation, onStartGame }) {
         ))}
       </div>
 
-      {/* Main content - two column layout */}
+      {/* Main content - two column layout (stacks on mobile/tablet) */}
       <div style={{ 
         display: "flex", 
+        flexDirection: isSmallScreen ? "column" : "row",
         alignItems: "center", 
         justifyContent: "center",
-        gap: 80, 
+        gap: isMobile ? 32 : isTablet ? 40 : 80, 
         zIndex: 1, 
         maxWidth: 1200,
         width: "100%",
@@ -58,19 +86,19 @@ function LandingPage({ onStartSimulation, onStartGame }) {
           flexDirection: "column", 
           alignItems: "center",
           textAlign: "center",
-          minWidth: 280,
+          minWidth: isSmallScreen ? "auto" : 280,
         }}>
           {/* Profile picture placeholder */}
           <div style={{
-            width: 200,
-            height: 200,
+            width: isMobile ? 120 : isTablet ? 150 : 200,
+            height: isMobile ? 120 : isTablet ? 150 : 200,
             borderRadius: "50%",
             background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #c084fc 100%)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 64,
-            marginBottom: 24,
+            fontSize: isMobile ? 40 : isTablet ? 50 : 64,
+            marginBottom: isMobile ? 16 : 24,
             border: "4px solid rgba(129, 140, 248, 0.3)",
             boxShadow: "0 0 40px rgba(99, 102, 241, 0.3)",
             overflow: "hidden",
@@ -80,7 +108,7 @@ function LandingPage({ onStartSimulation, onStartGame }) {
           </div>
           
           <h2 style={{
-            fontSize: 28,
+            fontSize: isMobile ? 22 : isTablet ? 24 : 28,
             fontWeight: 700,
             marginBottom: 8,
             background: "linear-gradient(135deg, #e2e8f0, #94a3b8)",
@@ -91,7 +119,7 @@ function LandingPage({ onStartSimulation, onStartGame }) {
           </h2>
           
           <p style={{
-            fontSize: 14,
+            fontSize: isMobile ? 12 : 14,
             color: "#818cf8",
             fontWeight: 500,
             marginBottom: 12,
@@ -100,7 +128,7 @@ function LandingPage({ onStartSimulation, onStartGame }) {
           </p>
           
           <p style={{
-            fontSize: 13,
+            fontSize: isMobile ? 12 : 13,
             color: "#64748b",
             lineHeight: 1.6,
             maxWidth: 260,
@@ -113,7 +141,8 @@ function LandingPage({ onStartSimulation, onStartGame }) {
         <div style={{ 
           display: "flex", 
           flexDirection: "column",
-          alignItems: "flex-start",
+          alignItems: isSmallScreen ? "center" : "flex-start",
+          textAlign: isSmallScreen ? "center" : "left",
           maxWidth: 500,
         }}>
           <div style={{
@@ -122,18 +151,18 @@ function LandingPage({ onStartSimulation, onStartGame }) {
             borderRadius: 20,
             background: "rgba(99, 102, 241, 0.15)",
             border: "1px solid rgba(99, 102, 241, 0.3)",
-            fontSize: 12,
+            fontSize: isMobile ? 10 : 12,
             fontWeight: 600,
             letterSpacing: 1.5,
             color: "#818cf8",
-            marginBottom: 20,
+            marginBottom: isMobile ? 12 : 20,
             textTransform: "uppercase",
           }}>
             Interactive 3D Epigenetics
           </div>
 
           <h1 style={{
-            fontSize: "clamp(42px, 6vw, 64px)",
+            fontSize: isMobile ? 36 : isTablet ? 42 : "clamp(42px, 6vw, 64px)",
             fontWeight: 800,
             lineHeight: 1.1,
             marginBottom: 16,
@@ -147,26 +176,27 @@ function LandingPage({ onStartSimulation, onStartGame }) {
           </h1>
 
           <p style={{ 
-            fontSize: 16, 
+            fontSize: isMobile ? 13 : isTablet ? 14 : 16, 
             lineHeight: 1.7, 
             color: "#94a3b8", 
-            marginBottom: 32,
+            marginBottom: isMobile ? 24 : 32,
             fontWeight: 300,
+            padding: isSmallScreen ? "0 8px" : 0,
           }}>
             Explore the fascinating world of epigenetics through interactive 3D visualization. 
             Watch how chemical modifications to histone proteins control gene expression in real-time.
           </p>
 
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: isMobile ? 12 : 16, flexWrap: "wrap", justifyContent: isSmallScreen ? "center" : "flex-start" }}>
             <button
               onClick={onStartSimulation}
               style={{
-                padding: "14px 32px",
+                padding: isMobile ? "12px 24px" : "14px 32px",
                 borderRadius: 12,
                 border: "none",
                 background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
                 color: "#fff",
-                fontSize: 16,
+                fontSize: isMobile ? 14 : 16,
                 fontWeight: 600,
                 cursor: "pointer",
                 fontFamily: "inherit",
@@ -185,12 +215,12 @@ function LandingPage({ onStartSimulation, onStartGame }) {
             <button
               onClick={onStartGame}
               style={{
-                padding: "14px 32px",
+                padding: isMobile ? "12px 24px" : "14px 32px",
                 borderRadius: 12,
                 border: "1px solid rgba(99, 102, 241, 0.4)",
                 background: "rgba(99, 102, 241, 0.1)",
                 color: "#c4b5fd",
-                fontSize: 16,
+                fontSize: isMobile ? 14 : 16,
                 fontWeight: 600,
                 cursor: "pointer",
                 fontFamily: "inherit",
@@ -226,6 +256,7 @@ const onboardingSteps = [
 // ============================================================
 
 export default function App() {
+  const { isMobile, isTablet, isSmallScreen } = useResponsive();
   const [mode, setMode] = useState("landing");
   const [selectedEnzyme, setSelectedEnzyme] = useState(null);
   const [modifications, setModifications] = useState({});
@@ -234,6 +265,7 @@ export default function App() {
   const [currentLevel, setCurrentLevel] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // 3D View Controls
   const [currentView, setCurrentView] = useState('default');
@@ -358,25 +390,74 @@ export default function App() {
       position: "relative",
       overflow: "hidden",
     }}>
+      {/* Mobile Menu Button - only shows on small screens */}
+      {isSmallScreen && (
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          style={{
+            position: "fixed",
+            top: 12,
+            left: 12,
+            zIndex: 1000,
+            width: 44,
+            height: 44,
+            borderRadius: 10,
+            border: "1px solid rgba(99, 102, 241, 0.3)",
+            background: "rgba(15, 19, 51, 0.95)",
+            backdropFilter: "blur(10px)",
+            color: "#818cf8",
+            fontSize: 20,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "inherit",
+          }}
+        >
+          {sidebarOpen ? "×" : "☰"}
+        </button>
+      )}
+
+      {/* Mobile overlay when sidebar is open */}
+      {isSmallScreen && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 99,
+          }}
+        />
+      )}
+
       {/* ===== LEFT PANEL - Enzymes ===== */}
       <div style={{
-        width: 280,
-        minWidth: 280,
-        background: "rgba(15, 19, 51, 0.8)",
+        width: isSmallScreen ? "85vw" : 280,
+        maxWidth: isSmallScreen ? 300 : 280,
+        minWidth: isSmallScreen ? "auto" : 280,
+        background: "rgba(15, 19, 51, 0.95)",
         backdropFilter: "blur(20px)",
         borderRight: "1px solid rgba(99, 102, 241, 0.1)",
-        padding: 20,
+        padding: isSmallScreen ? "60px 16px 20px 16px" : 20,
         display: "flex",
         flexDirection: "column",
         gap: 12,
         overflowY: "auto",
-        animation: "slideIn 0.5s ease-out",
+        animation: isSmallScreen ? "none" : "slideIn 0.5s ease-out",
+        // Mobile: slide-out drawer
+        position: isSmallScreen ? "fixed" : "relative",
+        left: isSmallScreen ? (sidebarOpen ? 0 : "-100%") : 0,
+        top: 0,
+        bottom: 0,
+        zIndex: isSmallScreen ? 100 : 1,
+        transition: isSmallScreen ? "left 0.3s ease" : "none",
       }}>
         {/* Back button and Logo */}
         <div style={{ marginBottom: 8 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
             <button
-              onClick={() => { setMode("landing"); handleReset(); }}
+              onClick={() => { setMode("landing"); handleReset(); setSidebarOpen(false); }}
               style={{
                 background: "rgba(99, 102, 241, 0.1)",
                 border: "1px solid rgba(99, 102, 241, 0.3)",
@@ -436,6 +517,30 @@ export default function App() {
             {score <= currentLevel.targetScore && currentLevel.targetScore < 0 && (
               <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", fontSize: 12, color: "#22c55e", fontWeight: 600 }}>
                 Level Complete!
+              </div>
+            )}
+            {/* Mobile level selector - inside sidebar */}
+            {isSmallScreen && (
+              <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                {CHALLENGES.map((c, i) => (
+                  <button
+                    key={c.id}
+                    onClick={() => { setCurrentLevel(c); handleReset(); }}
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      border: currentLevel?.id === c.id ? "2px solid #6366f1" : "1px solid rgba(255,255,255,0.08)",
+                      background: currentLevel?.id === c.id ? "rgba(99,102,241,0.2)" : "rgba(15, 19, 51, 0.7)",
+                      color: "#e2e8f0",
+                      fontSize: 14,
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -537,27 +642,30 @@ export default function App() {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", position: "relative", minHeight: 0, overflow: "hidden" }}>
         {/* Top bar - Chromatin State */}
         <div style={{
-          padding: "12px 24px",
+          padding: isSmallScreen ? "12px 12px 8px 60px" : "12px 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 24,
+          gap: isSmallScreen ? 12 : 24,
           animation: "fadeUp 0.5s ease-out 0.2s both",
         }}>
           <div style={{
-            padding: "12px 24px",
+            padding: isSmallScreen ? "10px 14px" : "12px 24px",
             borderRadius: 16,
             background: "rgba(15, 19, 51, 0.7)",
             backdropFilter: "blur(20px)",
             border: "1px solid rgba(99, 102, 241, 0.15)",
             display: "flex",
+            flexDirection: isSmallScreen ? "column" : "row",
             alignItems: "center",
-            gap: 20,
-            minWidth: 400,
+            gap: isSmallScreen ? 10 : 20,
+            minWidth: isSmallScreen ? "auto" : 400,
+            width: isSmallScreen ? "100%" : "auto",
+            maxWidth: isSmallScreen ? 300 : "none",
           }}>
-            <div>
+            <div style={{ width: "100%" }}>
               <div style={{ fontSize: 10, color: "#64748b", textTransform: "uppercase", letterSpacing: 1.5, fontWeight: 600, marginBottom: 4 }}>Chromatin State</div>
-              <div style={{ width: 200, height: 8, borderRadius: 4, background: "linear-gradient(90deg, #ef4444, #f59e0b, #22c55e)", position: "relative" }}>
+              <div style={{ width: isSmallScreen ? "100%" : 200, height: 8, borderRadius: 4, background: "linear-gradient(90deg, #ef4444, #f59e0b, #22c55e)", position: "relative" }}>
                 <div style={{
                   position: "absolute",
                   top: -3,
@@ -576,8 +684,8 @@ export default function App() {
                 <span>Euchromatin</span>
               </div>
             </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 20, fontWeight: 700, color: status.color, display: "flex", alignItems: "center", gap: 6, transition: "color 0.5s" }}>
+            <div style={{ textAlign: "center", whiteSpace: "nowrap" }}>
+              <div style={{ fontSize: isSmallScreen ? 16 : 20, fontWeight: 700, color: status.color, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "color 0.5s" }}>
                 {status.emoji} {status.label}
               </div>
               <div style={{ fontSize: 10, color: "#64748b" }}>{status.desc}</div>
@@ -586,7 +694,7 @@ export default function App() {
         </div>
 
         {/* 3D Visualization */}
-        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, position: "relative", minHeight: 0, overflow: "hidden" }}>
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: isSmallScreen ? 8 : 20, position: "relative", minHeight: 0, overflow: "hidden" }}>
           <Nucleosome 
             modifications={modifications}
             selectedEnzyme={selectedEnzyme}
@@ -597,12 +705,14 @@ export default function App() {
             wrappingTightness={(score + 100) / 200} // Convert score -100 to 100 into 0 to 1
           />
           
-          {/* Camera Controls - Bottom Right */}
+          {/* Camera Controls - Bottom Right (scaled down on mobile) */}
           <div style={{
             position: "absolute",
-            right: 20,
-            bottom: 20,
+            right: isSmallScreen ? 8 : 20,
+            bottom: isSmallScreen ? 8 : 20,
             zIndex: 10,
+            transform: isSmallScreen ? "scale(0.85)" : "none",
+            transformOrigin: "bottom right",
           }}>
             <CameraControls
               currentView={currentView}
@@ -615,8 +725,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Level selector buttons - right side (only shown in quiz mode) */}
-        {isLevel && (
+        {/* Level selector buttons - right side (hidden on mobile, shown in sidebar instead) */}
+        {isLevel && !isSmallScreen && (
         <div style={{
           position: "absolute",
           right: 20,
@@ -658,10 +768,10 @@ export default function App() {
         {notification && (
           <div style={{
             position: "absolute",
-            top: 80,
+            top: isSmallScreen ? 70 : 80,
             left: "50%",
             transform: "translateX(-50%)",
-            padding: "10px 20px",
+            padding: isSmallScreen ? "8px 14px" : "10px 20px",
             borderRadius: 10,
             background: notification.type === "success" ? "rgba(34,197,94,0.15)" : notification.type === "error" ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.15)",
             border: `1px solid ${notification.type === "success" ? "rgba(34,197,94,0.3)" : notification.type === "error" ? "rgba(239,68,68,0.3)" : "rgba(99,102,241,0.3)"}`,
