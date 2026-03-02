@@ -1,4 +1,4 @@
-// Quiz Mode Challenges - based on Phase 3 of EpiGenesis spec
+// Game Mode Challenges - based on Phase 3 of EpiGenesis spec
 
 export const CHALLENGES = [
   {

@@ -10,7 +10,7 @@ import { MODIFICATION_SITES } from './data/modifications';
 // LANDING PAGE COMPONENT
 // ============================================================
 
-function LandingPage({ onStartSimulation, onStartQuiz }) {
+function LandingPage({ onStartSimulation, onStartGame }) {
   return (
     <div style={{
       minHeight: "100vh",
@@ -183,7 +183,7 @@ function LandingPage({ onStartSimulation, onStartQuiz }) {
             </button>
 
             <button
-              onClick={onStartQuiz}
+              onClick={onStartGame}
               style={{
                 padding: "14px 32px",
                 borderRadius: 12,
@@ -202,7 +202,7 @@ function LandingPage({ onStartSimulation, onStartQuiz }) {
               onMouseOver={(e) => { e.currentTarget.style.background = "rgba(99, 102, 241, 0.2)"; e.currentTarget.style.transform = "scale(1.05)"; }}
               onMouseOut={(e) => { e.currentTarget.style.background = "rgba(99, 102, 241, 0.1)"; e.currentTarget.style.transform = "scale(1)"; }}
             >
-              Quiz Mode
+              Game Mode
             </button>
           </div>
         </div>
@@ -231,7 +231,7 @@ export default function App() {
   const [modifications, setModifications] = useState({});
   const [history, setHistory] = useState([]);
   const [notification, setNotification] = useState(null);
-  const [currentQuiz, setCurrentQuiz] = useState(null);
+  const [currentLevel, setCurrentLevel] = useState(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   
@@ -339,13 +339,13 @@ export default function App() {
     return (
       <LandingPage 
         onStartSimulation={() => { setMode("simulate"); }}
-        onStartQuiz={() => { setMode("quiz"); setCurrentQuiz(CHALLENGES[0]); handleReset(); }}
+        onStartGame={() => { setMode("game"); setCurrentLevel(CHALLENGES[0]); handleReset(); }}
       />
     );
   }
 
-  // SIMULATION / QUIZ MODE
-  const isQuiz = mode === "quiz" && currentQuiz;
+  // SIMULATION / GAME MODE
+  const isLevel = mode === "game" && currentLevel;
 
   return (
     <div style={{
@@ -403,8 +403,8 @@ export default function App() {
           <p style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>Interactive Epigenetics Simulator</p>
         </div>
 
-        {/* Quiz card */}
-        {isQuiz && (
+        {/* Level card */}
+        {isLevel && (
           <div style={{
             padding: 14,
             borderRadius: 12,
@@ -413,29 +413,29 @@ export default function App() {
             marginBottom: 4,
           }}>
             <div style={{ fontSize: 10, color: "#818cf8", fontWeight: 600, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>
-              Quiz {currentQuiz.id} - {currentQuiz.difficulty}
+              Level {currentLevel.id} - {currentLevel.difficulty}
             </div>
-            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{currentQuiz.title}</div>
-            {currentQuiz.scenario && (
+            <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>{currentLevel.title}</div>
+            {currentLevel.scenario && (
               <div style={{ fontSize: 11, color: "#c4b5fd", lineHeight: 1.5, marginBottom: 8, fontStyle: "italic" }}>
-                "{currentQuiz.scenario}"
+                "{currentLevel.scenario}"
               </div>
             )}
-            <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.5 }}>{currentQuiz.description}</div>
-            {currentQuiz.objective && (
+            <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.5 }}>{currentLevel.description}</div>
+            {currentLevel.objective && (
               <div style={{ fontSize: 10, color: "#60a5fa", marginTop: 8 }}>
-                Objective: {currentQuiz.objective}
+                Objective: {currentLevel.objective}
               </div>
             )}
-            <div style={{ fontSize: 10, color: "#f59e0b", marginTop: 8, fontStyle: "italic" }}>{currentQuiz.hint}</div>
-            {score >= currentQuiz.targetScore && currentQuiz.targetScore > 0 && (
+            <div style={{ fontSize: 10, color: "#f59e0b", marginTop: 8, fontStyle: "italic" }}>{currentLevel.hint}</div>
+            {score >= currentLevel.targetScore && currentLevel.targetScore > 0 && (
               <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", fontSize: 12, color: "#22c55e", fontWeight: 600 }}>
-                Quiz Complete!
+                Level Complete!
               </div>
             )}
-            {score <= currentQuiz.targetScore && currentQuiz.targetScore < 0 && (
+            {score <= currentLevel.targetScore && currentLevel.targetScore < 0 && (
               <div style={{ marginTop: 8, padding: "6px 10px", borderRadius: 8, background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", fontSize: 12, color: "#22c55e", fontWeight: 600 }}>
-                Quiz Complete!
+                Level Complete!
               </div>
             )}
           </div>
@@ -615,8 +615,8 @@ export default function App() {
           </div>
         </div>
 
-        {/* Quiz selector buttons - right side (only shown in quiz mode) */}
-        {isQuiz && (
+        {/* Level selector buttons - right side (only shown in quiz mode) */}
+        {isLevel && (
         <div style={{
           position: "absolute",
           right: 20,
@@ -629,14 +629,14 @@ export default function App() {
           {CHALLENGES.map((c, i) => (
             <button
               key={c.id}
-              onClick={() => { setCurrentQuiz(c); handleReset(); }}
+              onClick={() => { setCurrentLevel(c); handleReset(); }}
               title={c.title}
               style={{
                 width: 40,
                 height: 40,
                 borderRadius: 10,
-                border: currentQuiz?.id === c.id ? "2px solid #6366f1" : "1px solid rgba(255,255,255,0.08)",
-                background: currentQuiz?.id === c.id ? "rgba(99,102,241,0.2)" : "rgba(15, 19, 51, 0.7)",
+                border: currentLevel?.id === c.id ? "2px solid #6366f1" : "1px solid rgba(255,255,255,0.08)",
+                background: currentLevel?.id === c.id ? "rgba(99,102,241,0.2)" : "rgba(15, 19, 51, 0.7)",
                 backdropFilter: "blur(10px)",
                 color: "#e2e8f0",
                 fontSize: 16,
